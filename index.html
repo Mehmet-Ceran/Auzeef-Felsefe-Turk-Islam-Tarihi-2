@@ -1,0 +1,1501 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Test</title>
+  <style>
+    body { font-family: sans-serif; padding: 20px; max-width: 600px; margin: auto; }
+    .soru { font-weight: bold; margin-bottom: 10px; }
+    .secenekler button {
+      display: block;
+      margin: 10px 0;
+      padding: 12px;
+      width: 100%;
+      font-size: 16px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      background-color: #f9f9f9;
+      cursor: pointer;
+    }
+    .secenekler button:hover { background-color: #e0e0e0; }
+    #navigasyon { margin-top: 20px; }
+    #sonuc { margin-top: 20px; font-size: 1.2em; font-weight: bold; }
+  </style>
+</head>
+<body>
+
+<h1>Test</h1>
+
+<div id="test">
+  <div class="soru" id="soru-metin"></div>
+  <div class="secenekler" id="secenekler"></div>
+  <div id="geri-bildirim" style="margin-top:10px; font-weight:bold;"></div>
+</div>
+
+<div id="navigasyon">
+  <label for="soru-sec">Soruyu Seç:</label>
+  <select id="soru-sec"></select>
+  <button onclick="cevapla()">Cevapla</button>
+  <button onclick="sonrakiSoru()">Sonraki Soru</button>
+  <button onclick="testiBitir()">Testi Bitir</button>
+</div>
+
+<div id="sonuc"></div>
+<div id="bastan" style="display:none; margin-top:10px;">
+  <button onclick="bastanBasla()">Baştan Başla</button>
+</div>
+
+<script>
+const sorular = 
+[
+  {
+    "question": "1. ﻿Aşağıdakilerden hangisi İbn Sînâ’nın himayesine girmek için uğraştığı hükümdardır?",
+    "options": [
+      "a) Mecdüddevle",
+      "b) Şemsüddevle",
+      "c) Samsâmüddevle",
+      "d) Alâüddevle",
+      "e) Nuh b. Nasr"
+    ],
+    "answer": 3
+  },
+  {
+    "question": "2. Aşağıdakilerden hangisi İbn Sînâ’nın eserlerinin çoğunu yazdığı dildir?",
+    "options": [
+      "a) Türkçe",
+      "b) Farsça",
+      "c) Soğdca",
+      "d) Pehlevice",
+      "e) Arapça"
+    ],
+    "answer": 4
+  },
+  {
+    "question": "3. Aşağıdakilerden hangisinde İbn Sînâ’nın ilk felsefe eğitimini aldığı hocasının adı doğru olarak verilmiştir?",
+    "options": [
+      "a) Nâtilî",
+      "b) Bîrûnî",
+      "c) Fârâbî",
+      "d) Kindî",
+      "e) Firdevsî"
+    ],
+    "answer": 0
+  },
+  {
+    "question": "4. İbn Sînâ hayatı boyunca genellikle aşağıdaki mesleklerden hangisini yaparak geçimini temin etmiştir?",
+    "options": [
+      "a) Mühendis",
+      "b) Doktor",
+      "c) Hakim",
+      "d) Avukat",
+      "e) Veteriner"
+    ],
+    "answer": 1
+  },
+  {
+    "question": "5. İbn Sînâ’nın eş-Şifâadlı felsefî ilimler ansiklopedisi kaç bölümden oluşmaktadır?",
+    "options": [
+      "a) 32",
+      "b) 21",
+      "c) 22",
+      "d) 25",
+      "e) 13"
+    ],
+    "answer": 2
+  },
+  {
+    "question": "6. Aşağıdakilerden hangisi eş-Şifâ’nın Latince adıdır?",
+    "options": [
+      "a) Theologia",
+      "b) Sufficentia",
+      "c) Summa",
+      "d) Commentary",
+      "e) Compendium"
+    ],
+    "answer": 1
+  },
+  {
+    "question": "7. Aşağıdakilerden hangisi İbn Sînâ’nın Latince tercümesi dolayısıyla Batı’da standart ders kitabı  olarak okutulan tıp eseridir?",
+    "options": [
+      "a) el-Kânûn",
+      "b) eş-Şifâ",
+      "c) el-İşârât ve’t-tenbîhât",
+      "d) Dânişnâme-i Alâî",
+      "e) el-Birr ve’l-ism"
+    ],
+    "answer": 0
+  },
+  {
+    "question": "8. Aşağıdakilerden hangisi İbn Sînâ’nın ilgilendiği matematiksel bilim dallarından biri değildir?",
+    "options": [
+      "a) Geometri",
+      "b) Aritmetik",
+      "c) Müzik",
+      "d) Astronomi",
+      "e) Harita"
+    ],
+    "answer": 4
+  },
+  {
+    "question": "9. İbn Sînâ’ya göre mahiyet varlıg3ı hangi açıdan öncelemektedir?",
+    "options": [
+      "a) Aksiyolojik",
+      "b) Ontolojik",
+      "c) Zihinsel",
+      "d) Zoolojik",
+      "e) Varlıksal"
+    ],
+    "answer": 2
+  },
+  {
+    "question": "10. Aşağıdakilerden hangisi “varlıg3ı başkası sebebiyle zorunlu”nun doğru karşılıg3ıdır?",
+    "options": [
+      "a) Vâcibü’l-vücûd bi-zâtihi",
+      "b) Mümkinü’l-vücûd bi-gayrihi",
+      "c) Vâcibü’l-vücûd bi-gayrihi",
+      "d) Mümkinü’l-vücûd bi-zatihi",
+      "e) Mümteniu’l-vücûd bi-zatihi"
+    ],
+    "answer": 2
+  },
+  {
+    "question": "11. Bir şeyin varlıg3ının soyut olarak kavram düzeyinde akılla idrâk edilmesi durumunda o şeyin akıl  dı ında duyularla kavranabilen bir varlı ş g3ından söz edilip edilemeyeceği sorusu aşağıdaki kavram  çiftlerinden hangisini ortaya çıkarmaktadır?",
+    "options": [
+      "a) Varlık - Zaman",
+      "b) Varlık - Mahiyet",
+      "c) Zorunluluk - İmkân",
+      "d) Mahiyet - Nelik",
+      "e) Zaman - Mekân"
+    ],
+    "answer": 1
+  },
+  {
+    "question": "12. Aşağıdakilerden hangisi “varlıg3ı düşünülemeyen”in karşılıg3ıdır?",
+    "options": [
+      "a) Kaçınılmaz",
+      "b) Muhtemel",
+      "c) Zorunlu",
+      "d) İmkânsız",
+      "e) Mümkün"
+    ],
+    "answer": 3
+  },
+  {
+    "question": "13. Aşağıdakilerden hangisi “yokluğu düşünülemeyen”in karşılıg3ıdır?",
+    "options": [
+      "a) Zorunlu",
+      "b) İmkansız",
+      "c) Mümkün",
+      "d) Muhtemel",
+      "e) Ezelî"
+    ],
+    "answer": 0
+  },
+  {
+    "question": "14. “Herhangi bir karşılık almaksızın gerekli bir şeyi vermek” İbn Sînâ göre aşağıdakilerden  hangisinin tanımıdır?",
+    "options": [
+      "a) Hakîmlik",
+      "b) Cömertlik",
+      "c) Mutlaklık",
+      "d) Sebepsizlik",
+      "e) Ezelîlik"
+    ],
+    "answer": 1
+  },
+  {
+    "question": "15. “İyi olana yakışan iyiyi yapmaktır” sözü hangi filozofa aittir?",
+    "options": [
+      "a) Aristoteles",
+      "b) Fârâbî",
+      "c) Eflâtun",
+      "d) Zenon",
+      "e) Kindî"
+    ],
+    "answer": 2
+  },
+  {
+    "question": "16. “İyi olana yakışan iyiyi yapmaktır” sözü hangi filozofa aittir?",
+    "options": [
+      "a) Aristoteles",
+      "b) Eflâtun",
+      "c) Fârâbî",
+      "d) Zenon",
+      "e) Kindî"
+    ],
+    "answer": 1
+  },
+  {
+    "question": "17. İbn Sînâ aşağıdakilerden hangisinin “her şeyin aruzladıg3ı” şey olduğunu söylemektedir?",
+    "options": [
+      "a) Ezelîlik",
+      "b) İyilik",
+      "c) Mümkünlük",
+      "d) Zorunluluk",
+      "e) Sonradanlık"
+    ],
+    "answer": 1
+  },
+  {
+    "question": "18. “Bir şeyin tür ve tabiatı için gerekli olan sabit yetkinliklerin yokluğu” İbn Sînâ’ya göre  aşağıdakilerden hangisine dair bir açıklamadır?",
+    "options": [
+      "a) Bizatihi kötülük",
+      "b) Arazî kötülük",
+      "c) Mutlak kötülük",
+      "d) Arazî iyilik",
+      "e) Mutlak yokluk"
+    ],
+    "answer": 0
+  },
+  {
+    "question": "19. Aşağıdakilerden hangisi ay-altı dünyada yokluğun varlık sebebidir?",
+    "options": [
+      "a) Zaman",
+      "b) Gökcisimleri",
+      "c) Ay-üstü âlem",
+      "d) Madde",
+      "e) Tanrı"
+    ],
+    "answer": 3
+  },
+  {
+    "question": "20. İbn Sînâ’ya göre aşağıdakilerden hangisinin varlıg3ından söz edilemez?",
+    "options": [
+      "a) Mutlak iyilik",
+      "b) Mutlak kötülük",
+      "c) Görece kötülük",
+      "d) Görece iyilik",
+      "e) Hâkim iyilik"
+    ],
+    "answer": 1
+  },
+  {
+    "question": "21. İbn Sînâ ay-altı dünyada kötülüğün varlıg3ının aşağıdakilerden hangisinin yokluğunu  gerektirmediği ileri sürmektedir?",
+    "options": [
+      "a) İyilik",
+      "b) Feyz",
+      "c) Adalet",
+      "d) Eşitlik",
+      "e) Hikmet"
+    ],
+    "answer": 4
+  },
+  {
+    "question": "22. Aşağıdakilerden hangisi İbn Sînâ’nın mantık alanında okuduğu kitaplardan biri değildir?",
+    "options": [
+      "a) Kategoriler",
+      "b) Yorum Üzerine",
+      "c) Elementler",
+      "d) İkinci Analitikler",
+      "e) Topikler"
+    ],
+    "answer": 2
+  },
+  {
+    "question": "23. İbn Sînâ aşağıdaki şehirlerden hangisinde vefat etmiştir?",
+    "options": [
+      "a) Rey",
+      "b) Tahran",
+      "c) Buhara",
+      "d) Semerkant",
+      "e) Hemedan"
+    ],
+    "answer": 4
+  },
+  {
+    "question": "24. İbn Sînâ eş-Şifâ adlı felsefî bilimler ansiklopedisinde ahlak ve siyasete dair konuları hangi",
+    "options": [
+      "a) bölümün sonunda ele almaktadır?",
+      "b) Metafizik",
+      "c) Mantık",
+      "d) Fizik",
+      "e) Psikoloji"
+    ],
+    "answer": 0
+  },
+  {
+    "question": "25. Aşağıdakilerden hangisi İbn Sînâ’nın ilgisini yoğunlaştırdığı felsefî bilimlerden biri değildir?",
+    "options": [
+      "a) Mantık",
+      "b) Fizik",
+      "c) Siyaset",
+      "d) Psikoloji",
+      "e) Metafizik"
+    ],
+    "answer": 2
+  },
+  {
+    "question": "26. İbn Sînâ eş-Şifâadlı felsefî ilimler ansiklopedisinde ahlak ve siyasete dair konuları hangi bölümün sonunda ele almaktadır?",
+    "options": [
+      "a) Metafizik",
+      "b) Psikoloji",
+      "c) Fizik",
+      "d) Mantık",
+      "e) Matematik"
+    ],
+    "answer": 0
+  },
+  {
+    "question": "27. Aşağıdakilerden hangisi “varlığı da yokluğu da zorunlu olmayan”ın karşılığıdır?",
+    "options": [
+      "a) Mümkün",
+      "b) Zorunlu",
+      "c) Muhtemel",
+      "d) İmkânsız",
+      "e) Hâdis"
+    ],
+    "answer": 0
+  },
+  {
+    "question": "28. İbn Sînâ’ya göre bir şeyin dış dünyadaki somut varlığı, o şeyin …… ilgili bilgimizden öncedir.Yukarıdaki  boşluğu doğru bir şekilde tamamlayan seçeneği bulunuz.",
+    "options": [
+      "a) Varlığıyla",
+      "b) Cinsiyle",
+      "c) Türüyle",
+      "d) Mahiyetiyle",
+      "e) Zamanıyla"
+    ],
+    "answer": 3
+  },
+  {
+    "question": "29. Aşağıdakilerden hangisi “varlıg3ın önselliği”nin doğru karşılıg3ıdır?",
+    "options": [
+      "a) Varlıg3ın önceliği",
+      "b) Varlıg3ın başlangıçsızlıg3ı",
+      "c) Varlıg3ın ezelîliği",
+      "d) Varlıg3ın sonsuzluğu",
+      "e) Varlıg3ın aprioriliği"
+    ],
+    "answer": 4
+  },
+  {
+    "question": "30. İbn Sînâ’ya göre âlem hakkında aşağıdaki yargılardan hangisi doğrudur?",
+    "options": [
+      "a) Âlem kötüdür.",
+      "b) Âlemde kötülük baskındır.",
+      "c) Âlemde iyilik azdır.",
+      "d) Âlem iyidir.",
+      "e) Âlemde iyilik baskındır."
+    ],
+    "answer": 3
+  },
+  {
+    "question": "31. İbn Sînâ aşağıdakilerden hangisinin “her şeyin arzuladığı” şey olduğunu söylemektedir?",
+    "options": [
+      "a) Ezelîlik",
+      "b) Mümkünlük",
+      "c) Zorunluluk",
+      "d) İyilik",
+      "e) Sonradanlık"
+    ],
+    "answer": 3
+  },
+  {
+    "question": "32. Aşağıdakilerden hangisi İbn Sînâ’nın kötülükle ilişkilendirdiği kavramlardan biri değildir?",
+    "options": [
+      "a) Madde",
+      "b) Yokluk",
+      "c) İmkân",
+      "d) Kuvve",
+      "e) Varlık"
+    ],
+    "answer": 4
+  },
+  {
+    "question": "33. Aşağıdaki kavram çiftlerinden hangisi ay-altı dünyanın değişim ve dönüşümünü ifade etmektedir?",
+    "options": [
+      "a) Gerçek ve hayal",
+      "b) Mutlak ve izafî",
+      "c) Zorunlu ve mümkün",
+      "d) Bilkuvve ve bilfiil",
+      "e) Kevn ve fesâd"
+    ],
+    "answer": 4
+  },
+  {
+    "question": "34. İbn Sînâ sabit ve değişmez bir varlığa sahip olmaması sebebiyle …… yokluğun kaynağı olduğunu  düşünmektedir.Yukarıdaki boşluğu doğru bir şekilde tamamlayan seçeneği bulunuz.",
+    "options": [
+      "a) Mekânın",
+      "b) Ay-üstü dünyanın",
+      "c) Âlemin",
+      "d) Maddenin",
+      "e) Zamanın"
+    ],
+    "answer": 3
+  },
+  {
+    "question": "35. Aşağıdakilerden hangisi İbn Sînâ açısından kötülüğün kaynağıdır?",
+    "options": [
+      "a) Madde",
+      "b) Felekler",
+      "c) Tanrı",
+      "d) Melekler",
+      "e) Şeytan"
+    ],
+    "answer": 0
+  },
+  {
+    "question": "36. “Pek çok odası olan bir binaya alındım; her odada birbiri üstüne sıralanmış kitap sandıkları vardı.  Odalardan birisinde Arap dili ve şiirine, bir diğerinde fıkha dair kitaplar bulunuyordu. Bu şekilde her bir  odada bir ilimle ilgili kitaplar mevcuttu. Eskilerin yazdığı kitapların kataloğunu inceledim ve ihtiyacım olan kitapları istedim. İsimleri pek çok kimse tarafından bilinmeyen, benim de ne daha önce gördüğüm ne da  daha sonra göreceğim kitaplarla karşılaştım.”İbn Sînâ’nın yukarıdaki anlatımı aşağıdaki mekânlardan  hangisine dairdir?",
+    "options": [
+      "a) Buhâra Medresesi",
+      "b) Beytü’l-Hikme",
+      "c) Buhâra Halk Kütüphanesi",
+      "d) Sâmânî Sarayı",
+      "e) Sâmâni Kraliyet Kütüphanesi"
+    ],
+    "answer": 4
+  },
+  {
+    "question": "37. İbn Sînâ Sâmânîler hanedanının başkenti olan …… şehrinde yetişmiştir.Yukarıdaki boşluğu doğru bir  şekilde tamamlayan seçeneği bulunuz.",
+    "options": [
+      "a) Buhâra",
+      "b) Semerkant",
+      "c) Bağdat",
+      "d) Basra",
+      "e) Şam"
+    ],
+    "answer": 0
+  },
+  {
+    "question": "38. Aşağıdakilerden hangisi, İbn Sînâ’nın felsefî ilimler ansiklopedisi mahiyetindeki hacimli  şaheserinin adıdır?",
+    "options": [
+      "a) et-Ta‘lîkât",
+      "b) el-Hidâye",
+      "c) Uyûnu’l-hikme",
+      "d) el-İşârât ve’t-tenbîhât",
+      "e) eş-Şifâ"
+    ],
+    "answer": 4
+  },
+  {
+    "question": "39. Aşağıdakilerden hangisinde İbn Sînâ’ya göre akılda önsel olarak şekillenen üç kavram doğru olarak  verilmiştir?",
+    "options": [
+      "a) Var-Yok-Zorunlu",
+      "b) Zorunlu-Mümkün-İmkansız",
+      "c) Ezelî-Sonradan-Mümkün",
+      "d) Mevcut-Zorunlu-Mümkün",
+      "e) Mevcut-Şey-Zorunlu"
+    ],
+    "answer": 4
+  },
+  {
+    "question": "40. İbn Sînâ’ya göre Özü İtibariyle Zorunlu Varlık’ın amacı aşağıdakilerden hangisine yöneliktir?",
+    "options": [
+      "a) Âleme",
+      "b) Soyut varlıklara",
+      "c) İnsana",
+      "d) Kendi özüne",
+      "e) Canlılara"
+    ],
+    "answer": 3
+  },
+  {
+    "question": "41. Özü İtibariyle Zorunlu Varlıg3ın fiillerinde bir …… gözetmesi O’nda eksikliği  çağrı tırmaktadır.Yukarıdaki bo ş şluğu doğru bir şekilde tamamlayan seçeneği bulunuz.",
+    "options": [
+      "a) Belirlenmişliği",
+      "b) Kimseyi",
+      "c) Neden",
+      "d) Sebep",
+      "e) Gaye"
+    ],
+    "answer": 4
+  },
+  {
+    "question": "42. Aşağıdakilerden hangisi Özü İtibariyle Zorunlu Varlığın fiillerinde gözetmesi durumunda O’nda eksikliğe  yol açacak bir şey değildir?",
+    "options": [
+      "a) Gaye sebep",
+      "b) Maddî sebep",
+      "c) Formel sebep",
+      "d) Fail sebep",
+      "e) Kendi özü"
+    ],
+    "answer": 4
+  },
+  {
+    "question": "43. Aşağıdaki kavram çiftlerinden hangisi ay-altı dünyanın değişim ve dönüşümünü ifade etmektedir?",
+    "options": [
+      "a) Gerçek ve hayal",
+      "b) Mutlak ve izafî",
+      "c) Oluş ve bozuluş",
+      "d) Zorunlu ve mümkün",
+      "e) Bilkuvve ve bilfiil"
+    ],
+    "answer": 2
+  },
+  {
+    "question": "44. İbn Sînâ açısından Özü İtibariyle Zorunlu Varlık dı ındaki bütün varlıkların özü itibariyle mümkün ş oluşu, onlarda ne tür bir kötülüğün varlıg3ını göstermektedir?",
+    "options": [
+      "a) Ahlakî",
+      "b) Metafizik",
+      "c) Tabiî",
+      "d) Fiziksel",
+      "e) Göreli"
+    ],
+    "answer": 1
+  },
+  {
+    "question": "45. Aşağıdakilerden hangisinde “otodidakt” kavramının anlamı doğru olarak verilmiştir?",
+    "options": [
+      "a) Dahi",
+      "b) Sanatkâr",
+      "c) Usta",
+      "d) Çömez",
+      "e) Kendi kendine öğrenen"
+    ],
+    "answer": 3
+  },
+  {
+    "question": "46. Aşağıdakilerden hangisi Bağdat Meşşâîleri olarak bilinen grubun ilişkili olduğu filozoftur?",
+    "options": [
+      "a) İbn Sînâ",
+      "b) Kindî",
+      "c) Âmirî",
+      "d) İhvân-ı Safâ",
+      "e) Fârâbî"
+    ],
+    "answer": 4
+  },
+  {
+    "question": "47. Aşağıdakilerden hangisi “İsbât-ı Vâcib”in doğru karşılıg3ıdır?",
+    "options": [
+      "a) Mümkün varlıg3ın ispatı",
+      "b) Özü itibariyle zorunlu varlıg3ın ispatı",
+      "c) Zorunlu varlıg3ın ispatı",
+      "d) İmkânsız varlıg3ın ispatı",
+      "e) Başkası sebebiyle zorunlu varlıg3ın ispatı"
+    ],
+    "answer": 1
+  },
+  {
+    "question": "48. Aşağıdakilerden hangisi İbn Sînâ’nın Tanrı’nın zatı ve sıfatları arasındaki ilişkiye dair görüşünü ifade  etmektedir?",
+    "options": [
+      "a) Zat ve sıfatlar ayrıdır.",
+      "b) Sıfatlar zata ilişmiştir.",
+      "c) Zattan ayrı sıfatlar yoktur.",
+      "d) Sıfatlar yoktur.",
+      "e) Sıfatlar yaratılmıştır."
+    ],
+    "answer": 2
+  },
+  {
+    "question": "49. Aşağıdakilerden hangisi Zorunlu Varlık’ın yetkinliğini ifade eden kavramdır?",
+    "options": [
+      "a) Cûd",
+      "b) Ezelîlik",
+      "c) Kemâl",
+      "d) Hayr",
+      "e) Tam"
+    ],
+    "answer": 2
+  },
+  {
+    "question": "50. Bir varlık açısından aşağıdakilerden hangisi arttıkça kötülük düzeyi de artmaktadır?",
+    "options": [
+      "a) Kuvvesi",
+      "b) Cismi",
+      "c) Boyutu",
+      "d) Hacmi",
+      "e) İşlevi"
+    ],
+    "answer": 0
+  },
+  {
+    "question": "51. İbn Sînâ aşağıdaki eserlerinden hangisinde kullandıg3ı imalı ve kinayeli ifade şekliyle felsefe  literatürüne yeni bir tür kazandırmıştır?",
+    "options": [
+      "a) Aksâmu’l-hikme",
+      "b) eş-Şifâ",
+      "c) el-Kânûn",
+      "d) el-İşârât ve’t-tenbîhât",
+      "e) Uyûnu’l-hikme"
+    ],
+    "answer": 3
+  },
+  {
+    "question": "52. Aşağıdakilerden hangisi zorunlu, mümkün ve imkânsızın tanımlanamamasının sebebidir?",
+    "options": [
+      "a) Cinsinin olmaması",
+      "b) Cinsinin ve faslının olmaması",
+      "c) Türünün olmaması",
+      "d) Faslının olmaması",
+      "e) Cevher ve arazının olmaması"
+    ],
+    "answer": 1
+  },
+  {
+    "question": "53. İbn Sînâ’ya göre Özü İtibariyle Zorunlu Varlıg3ın hiçbir şekilde imkân ve kuvve barındırmaması  O’nun hangi özelliğini ifade etmektedir?",
+    "options": [
+      "a) Yetkinlik",
+      "b) Mutlaklık",
+      "c) Kudret sahibi olma",
+      "d) Bilgi sahibi olma",
+      "e) Adalet"
+    ],
+    "answer": 0
+  },
+  {
+    "question": "54. Aşağıdakilerden hangisi İbn Sînâ’ya göre Tanrı’nın varlıklar hakkındaki ezelî belirlemesinin adıdır?",
+    "options": [
+      "a) Kader",
+      "b) Ecel",
+      "c) Kazâ",
+      "d) Tabiat",
+      "e) Keder"
+    ],
+    "answer": 2
+  },
+  {
+    "question": "55. X. yüzyılın ortalarında halifenin otoritesindeki tedricî aşınmayı müteâkib, siyâsî gücün adem-i  merkezî hale gelmesiyle birlikte, Endülüs’ten Orta Asya’ya kadar büyük İslâm İmparatorluğu’nda,  bölgesel idareyi ele alan, ancak Bağdat’taki halifeyi de nihâî otorite olarak kabul eden mahallî  hanedanlıklar ortaya çıktı.Yukarıda tasvir edilen gelişmenin, İslâm dünyasındaki felsefe  çalı malarını etkileyen en önemli sonucu a ş şağıdakilerden hangisidir?",
+    "options": [
+      "a) Siyasî birliğin sağlanması",
+      "b) Ekonomik gücün artması",
+      "c) Sosyal çalkantıların ortaya çıkması",
+      "d) Siyasî hâkimiyetin genişlemesi",
+      "e) Kültürel çalışmaları destekleyen merkezlerin sayısının artması"
+    ],
+    "answer": 4
+  },
+  {
+    "question": "56. Aşağıdakilerden hangisi İbn Sînâ’nın hayatını geçirdiği şehirlerden biri değildir?",
+    "options": [
+      "a) Meşhed",
+      "b) Buhara",
+      "c) Hemedan",
+      "d) Rey",
+      "e) İsfahan"
+    ],
+    "answer": 0
+  },
+  {
+    "question": "57. İbn Sînâ’nın Cürcan’da tanı tı ş g3ı ve vefatına kadar yanında yer alan talebesi aşağıdakilerden  hangisidir?",
+    "options": [
+      "a) Cüzcânî",
+      "b) Behmenyâr",
+      "c) Levkerî",
+      "d) Ma‘sûmî",
+      "e) Ömer Hayyâm"
+    ],
+    "answer": 0
+  },
+  {
+    "question": "58. Aşağıdakilerden hangisi İbn Sînâ’nın çocukluk ve gençlik yıllarını geçirdiği şehirdir?",
+    "options": [
+      "a) Semerkant",
+      "b) Tus",
+      "c) Buhara",
+      "d) Gazne",
+      "e) Hemedan"
+    ],
+    "answer": 2
+  },
+  {
+    "question": "59. İbn Sînâ’ya göre mahiyetin varlıg3ı öncelemesi …… anlamda değil, …… plandadır.Yukarıdaki  boşlukları doğru bir şekilde tamamlayan seçeneği bulunuz.",
+    "options": [
+      "a) Ontolojik - Aksiyolojik",
+      "b) Aksiyolojik - Epistemolojik",
+      "c) Epistemolojik - Ontolojik",
+      "d) Ontolojik - Zihnî",
+      "e) Zihnî - Epistemolojik"
+    ],
+    "answer": 3
+  },
+  {
+    "question": "60. İbn Sînâ insan aklında önsel olarak şekillenen üç kavram olduğunu belirtmektedir: Mevcut, şey ve …… Yukarıdaki boşluğu doğru bir şekilde tamamlayan seçeneği bulunuz.",
+    "options": [
+      "a) İmkânsız",
+      "b) Mümkün",
+      "c) Zorunlu",
+      "d) Yok",
+      "e) Sonradanlık"
+    ],
+    "answer": 2
+  },
+  {
+    "question": "61. İbn Sînâ felsefe çalı malarını hangi sırayla gerçekle ş ştirmiştir?",
+    "options": [
+      "a) Metafizik-Fizik-Matematik-Mantık",
+      "b) Mantık-Matematik-Fizik-Metafizik",
+      "c) Mantık-Fizik-Matematik-Metafizik",
+      "d) Fizik-Matematik-Mantık-Metafizik",
+      "e) Metafizik-Mantık-Fizik-Matematik"
+    ],
+    "answer": 2
+  },
+  {
+    "question": "62. Aşağıdakilerden hangisi İbn Sînâ’nın talebeleriyle yazı malarından olu ş şan bir eseridir?",
+    "options": [
+      "a) el-Kânûn",
+      "b) el-Birr ve’l-ism",
+      "c) el-Mübâhasât",
+      "d) el-İşârât ve’t-tenbîhât",
+      "e) en-Necât"
+    ],
+    "answer": 2
+  },
+  {
+    "question": "63. ﻿Aşağıdakilerden hangisi sudûr teorisinde ay-üstü âlemin sonunda yer alan ayrık aklın adıdır?",
+    "options": [
+      "a) Faal Akıl",
+      "b) Kazanılmış Akıl",
+      "c) İlk Akıl",
+      "d) Maddî Akıl",
+      "e) Bilfiil Akıl"
+    ],
+    "answer": 0
+  },
+  {
+    "question": "64. Küllîleri idrak etmek aklî nefsin hangi yönünün bir özelliğidir?",
+    "options": [
+      "a) Epistemolojik",
+      "b) Pratik",
+      "c) Teorik",
+      "d) Noetik",
+      "e) Etik"
+    ],
+    "answer": 2
+  },
+  {
+    "question": "65. Aşağıdakilerden hangisi Faal Akıldan insana gelen etkinin adıdır?",
+    "options": [
+      "a) Tümel",
+      "b) Nefs",
+      "c) Feyz",
+      "d) Ruh",
+      "e) Emir"
+    ],
+    "answer": 2
+  },
+  {
+    "question": "66. “Organlara sahip tabiî bir bedenin ilk yetkinliği” tarifi aşağıdakilerden hangisine aittir?",
+    "options": [
+      "a) Bitkisel nefs",
+      "b) Aklî nefs",
+      "c) Hayvanî nefs",
+      "d) Kutsî nefs",
+      "e) İnsan ruhu"
+    ],
+    "answer": 1
+  },
+  {
+    "question": "67. İbn Sînâ’nın el-İşârât ve’t-tenbîhât’ına yazdıg1ı şerhte filozofu ciddi bir şekilde eleştiren düşünür  aşağıdakilerden hangisidir?",
+    "options": [
+      "a) Gazzâlî",
+      "b) Nasîruddîn et-Tûsî",
+      "c) Şehristânî",
+      "d) Fahreddin er-Râzî",
+      "e) İbn Teymiyye"
+    ],
+    "answer": 3
+  },
+  {
+    "question": "68. Aşağıdakilerden hangisi Şehristânî’nen felsefe eleştirisi mahiyetindeki eserinin adıdır?",
+    "options": [
+      "a) Tehâfütü’l-felâsife",
+      "b) el-Milel ve’n-nihal",
+      "c) Şerhu’l-İşârât",
+      "d) Musâra‘atü’l-felâsife",
+      "e) el-Muhâkemât"
+    ],
+    "answer": 3
+  },
+  {
+    "question": "69. Aşağıdakilerden hangisi Osmanlı devrinde felsefe konusunda önde gelen isimlerden biri  değildir?",
+    "options": [
+      "a) İbn Kemal",
+      "b) Mirim Çelebi",
+      "c) Fenârî",
+      "d) Hocazâde",
+      "e) Teftâzânî"
+    ],
+    "answer": 4
+  },
+  {
+    "question": "70. Aşağıdaki isimlerden hangisi İbn Sînâ’yı Şiîliğe tanıtan isimdir?",
+    "options": [
+      "a) Cürcânî",
+      "b) Kâtibî",
+      "c) Ebherî",
+      "d) Râzî",
+      "e) Hillî"
+    ],
+    "answer": 4
+  },
+  {
+    "question": "71. Aşağıdakilerden hangisi, Gazzâlî’nin en fazla etkilendiği filozoftur?",
+    "options": [
+      "a) Fârâbî",
+      "b) İbn Rüşd",
+      "c) İbn Sînâ",
+      "d) İbn Teymiyye",
+      "e) Kindî"
+    ],
+    "answer": 2
+  },
+  {
+    "question": "72. Gazzâlî aşağıdaki şehirlerden hangisinde bulunan Nizâmiye Medresesi’nde hocalık yapmıştır?",
+    "options": [
+      "a) Bağdat",
+      "b) Merv",
+      "c) Nişabur",
+      "d) Dımeşk",
+      "e) Medine"
+    ],
+    "answer": 0
+  },
+  {
+    "question": "73. Gazzâlî’nin felsefe eleştirilerinde hedefinde aşağıdaki filozoflardan hangisi bulunmaktadır?",
+    "options": [
+      "a) İbn Sînâ",
+      "b) İbn Rüşd",
+      "c) İbn Tufeyl",
+      "d) Kindî",
+      "e) Âmirî"
+    ],
+    "answer": 0
+  },
+  {
+    "question": "74. Aşağıdakilerden hangisi Gazzâlî’nin en çok etkilendiği filozoftur?",
+    "options": [
+      "a) Fârâbî",
+      "b) İbn Sînâ",
+      "c) İbn Rüşd",
+      "d) İbn Teymiyye",
+      "e) Kindî"
+    ],
+    "answer": 1
+  },
+  {
+    "question": "75. Gazzâlî aşağıdaki bilim dallarından hangisini sûfîlerle ilişkilendirmektedir?",
+    "options": [
+      "a) Siyaset",
+      "b) Mantık",
+      "c) Ahlak",
+      "d) Metafizik",
+      "e) Matematik"
+    ],
+    "answer": 2
+  },
+  {
+    "question": "76. Gazzâlî’nin Makâsıdu’l-felâsife adlı eseri İbn Sînâ’nın hangi eserini esas almaktadır?",
+    "options": [
+      "a) Uyûnu’l-hikme",
+      "b) Dânişnâme-i Alâî",
+      "c) el-İşârât ve’t-tenbîhât",
+      "d) eş-Şifâ",
+      "e) el-Adhaviyye fi’l-me‘âd"
+    ],
+    "answer": 1
+  },
+  {
+    "question": "77. Aşağıdakilerden hangisi Gazzâlî’ye göre hakikat arayışında olan gruplardan biri değildir?",
+    "options": [
+      "a) Sufiler",
+      "b) Batınîler",
+      "c) Filozoflar",
+      "d) Hadisçiler",
+      "e) Kelamcılar"
+    ],
+    "answer": 3
+  },
+  {
+    "question": "78. Gazzâlî’ye göre İslam filozofları aşağıdaki isimlerden hangisinin yolunu takip etmektedir?",
+    "options": [
+      "a) Aristoteles",
+      "b) Platon",
+      "c) Galen",
+      "d) Batlamyus",
+      "e) Zenon"
+    ],
+    "answer": 0
+  },
+  {
+    "question": "79. Gazzâlî, İslam filozoflarının görüşlerini aşağıdaki ekollerden hangisiyle karşılaştırarak  değerlendirmektedir?",
+    "options": [
+      "a) Fıkıh",
+      "b) Kelâm",
+      "c) Hadis",
+      "d) Tasavvuf",
+      "e) Tefsir"
+    ],
+    "answer": 1
+  },
+  {
+    "question": "80. “…… olmanın şartlarından biri de kendisinin …… olduğunu bilmemesidir” Yukarıdaki boşlukları doğru bir şekilde tamamlayan seçeneği bulunuz. A-Mü’min-Mü’min",
+    "options": [
+      "a) Bâtınî-Bâtınî",
+      "b) Kelâmcı-Kelâmcı",
+      "c) Taklit-Taklitçi",
+      "d) Taklitçi-Taklitçi",
+      "e) nswer:  E"
+    ],
+    "answer": 4
+  },
+  {
+    "question": "81. Gazzâlî İslam filozoflarını aşağıdakilerden hangisiyle itham etmektedir?",
+    "options": [
+      "a) Taklitçi olmak",
+      "b) Zeki olmak",
+      "c) Dahi olmak",
+      "d) Akıllı olmak",
+      "e) Tahkik ehli olmak"
+    ],
+    "answer": 0
+  },
+  {
+    "question": "82. Gazzâlî’ye göre “Kendilerinin mantıkçı olduğunu ve kanıtlanmı bilgiye sahip bulundu ş ğunu” iddia eden grup aşağıdakilerden hangisidir?",
+    "options": [
+      "a) Fakihler",
+      "b) Kelamcılar",
+      "c) Sufiler",
+      "d) Batınîler",
+      "e) Filozoflar"
+    ],
+    "answer": 4
+  },
+  {
+    "question": "83. Gazzâlî’ye göre “Kendilerinin düşünen ve akıl yürüten kimseler olduğunu” iddia eden grup  aşağıdakilerden hangisidir?",
+    "options": [
+      "a) Sufiler",
+      "b) Kelamcılar",
+      "c) Filozoflar",
+      "d) Batınîler",
+      "e) Fakihler"
+    ],
+    "answer": 1
+  },
+  {
+    "question": "84. İbn Sînâ’ya göre aklî nefsin kaç işlevi vardır?",
+    "options": [
+      "a) 2",
+      "b) 4",
+      "c) 1",
+      "d) 5",
+      "e) 6"
+    ],
+    "answer": 0
+  },
+  {
+    "question": "85. Aklî nefs …… bir cevherdir.",
+    "options": [
+      "a) Yukarıdaki boşluğu doğru bir şekilde tamamlayan seçeneği bulunuz.",
+      "b) Tözsel",
+      "c) Mutlak",
+      "d) Ezelî",
+      "e) Ebedî"
+    ],
+    "answer": 3
+  },
+  {
+    "question": "86. İbn Sînâ aklî nefsin kaç işlevi olduğunu ileri sürmektedir?",
+    "options": [
+      "a) 2",
+      "b) 4",
+      "c) 1",
+      "d) 5",
+      "e) 6"
+    ],
+    "answer": 0
+  },
+  {
+    "question": "87. Şehristânî’nin İsmailî/Eşʻarî bakı açısından yazdı ş g1ı felsefe eleştirisi aşağıdakilerden hangisidir?",
+    "options": [
+      "a) Tehâfütü’l-felâsife",
+      "b) Tehâfütü’t-tehâfüt",
+      "c) Musâraʻatü’l-felâsife",
+      "d) Şerhu’l-İşârât",
+      "e) el-Muhâkemât"
+    ],
+    "answer": 2
+  },
+  {
+    "question": "88. İbn Sînâ yerine Aristoteles ve Galen üzerine yoğunlaşmayı teşvik etmek üzere eser yazan filozof  aşağıdakilerden hangisidir?",
+    "options": [
+      "a) Ebu’l-Berekât el-Bağdâdî",
+      "b) Kâtibî",
+      "c) Fahreddin er-Râzî",
+      "d) Abdüllatif el-Bağdâdî",
+      "e) Nasîruddin et-Tûsî"
+    ],
+    "answer": 3
+  },
+  {
+    "question": "89. el-İşârât ve’t-tenbîhât’a yazdıg1ı şerhte İbn Sînâ’ya sert eleştiriler yönelten isim aşağıdakilerden  hangisidir?",
+    "options": [
+      "a) Gazzâlî",
+      "b) Nasîruddin et-Tûsî",
+      "c) Fahreddin er-Râzî",
+      "d) Şehristânî",
+      "e) İbn Teymiyye"
+    ],
+    "answer": 2
+  },
+  {
+    "question": "90. Aşağıdaki nitelemelerden hangisi Gazzâlî hakkında doğru değildir?",
+    "options": [
+      "a) Sûfî",
+      "b) Muhaddis (Hadisçi)",
+      "c) Mütekellim (Kelamcı)",
+      "d) Fakih (Fıkıhçı)",
+      "e) Eleştirmen"
+    ],
+    "answer": 1
+  },
+  {
+    "question": "91. Gazzâlî’nin filozofları eleştirmeden önce onların görüşlerini özetlemek üzere kaleme aldıg1ı eser  aşağıdakilerden hangisidir?",
+    "options": [
+      "a) Miʻyâru’l-ilm",
+      "b) Makâsıdu’l-felâsife",
+      "c) Tehâfütü’l-felâsife",
+      "d) Mihakkü’n-nazar",
+      "e) el-İktisâd fi’l-iʻtikâd"
+    ],
+    "answer": 1
+  },
+  {
+    "question": "92. Gazzâlî’ye göre eskiçağ filozoflarından kainatı yöneten, bilen ve kudretli bir yaratıcıyı inkar eden grup  aşağıdakilerden hangisidir?",
+    "options": [
+      "a) Naturalistler",
+      "b) Materyalistler",
+      "c) Matematikçiler",
+      "d) Mantıkçılar",
+      "e) Metafizikçiler"
+    ],
+    "answer": 1
+  },
+  {
+    "question": "93. “…… filozoflar tabiat âlemini, hayvan ve bitkilerin ilginç yönlerini çokça araştıran kimselerdir. Bu  araştırmaları neticesinde onlar her şeyin gaye ve maksadını bilen, hikmet sahibi bir yaratıcının  varlıg1ını kabul etmek zorunda kalmı lar, ancak ahreti, cenneti ve cehennemi inkar etmi ş şlerdir” Yukarıdaki boşluğu doğru bir şekilde tamamlayan seçeneği bulunuz.",
+    "options": [
+      "a) Materyalist",
+      "b) Metafizikçi",
+      "c) Mantıkçı",
+      "d) Naturalist",
+      "e) Matematikçi"
+    ],
+    "answer": 3
+  },
+  {
+    "question": "94. Aşağıdakilerden hangisi Gazzâlî’ye göre İslam filozofları içinde Aristoteles’i en iyi anlayan  isimlerden biridir?",
+    "options": [
+      "a) İbn Sînâ",
+      "b) Kindî",
+      "c) Sicistânî",
+      "d) Âmirî",
+      "e) İhvân-ı safâ"
+    ],
+    "answer": 0
+  },
+  {
+    "question": "95. Gazzâlî’ye göre eskiçağ filozoflarından kainatı yöneten, bilen ve kudretli bir yaratıcıyı inkar eden  grup aşağıdakilerden hangisidir?",
+    "options": [
+      "a) Naturalistler",
+      "b) Matematikçiler",
+      "c) Materyalistler",
+      "d) Mantıkçılar",
+      "e) Metafizikçiler"
+    ],
+    "answer": 2
+  },
+  {
+    "question": "96. Aşağıdakilerden hangisi İbn Sînâ’nın nefs tanımında ona yüklediği temel anlamdır?",
+    "options": [
+      "a) Suret",
+      "b) Madde",
+      "c) Şekil",
+      "d) Fail",
+      "e) Yetkinlik"
+    ],
+    "answer": 4
+  },
+  {
+    "question": "97. İbn Sînâ’nın sudur teorisinde ay-üstü âlemin sonunda yer alan ayrık aklın adı aşağıdakilerden  hangisidir?",
+    "options": [
+      "a) Kazanılmı akıl ş",
+      "b) Bilfiil akıl",
+      "c) Maddî akıl",
+      "d) İlk akıl",
+      "e) Faal akıl"
+    ],
+    "answer": 4
+  },
+  {
+    "question": "98. Akletme sürecinde keşfedilmesi gereken temel unsur aşağıdakilerden hangisidir?",
+    "options": [
+      "a) Cins",
+      "b) Büyük terim",
+      "c) Orta terim",
+      "d) Tür",
+      "e) Küçük terim"
+    ],
+    "answer": 2
+  },
+  {
+    "question": "99. Aşağıdaki hükümdarlardan hangisi kelamcılar, sufiler ve filozofların yaklaşımlarını  değerlendirmek üzere Nureddin el-Câmî’den bir eser yazmasını istemiştir?",
+    "options": [
+      "a) Şah İsmail",
+      "b) Timur",
+      "c) II. Mehmet",
+      "d) Uluğ Bey",
+      "e) Yıldırım Beyazıt"
+    ],
+    "answer": 2
+  },
+  {
+    "question": "100. Aşağıdakilerden hangisi, Gazzâlî’nin Nişabur’daki Nizamiye Medresesi’nde talebesi olduğu meşhur Eşʻarî  fakih ve mütekellimidir?",
+    "options": [
+      "a) Bâkıllânî",
+      "b) Nizâmülmülk",
+      "c) Eşʻarî",
+      "d) Cüveynî",
+      "e) Şâfiî"
+    ],
+    "answer": 3
+  },
+  {
+    "question": "101. Gazzâlî aşağıdaki kelam ekollerinden hangisine mensuptur?",
+    "options": [
+      "a) Mâtürîdî",
+      "b) Bâtınî",
+      "c) Şiî",
+      "d) Selefî",
+      "e) Eş‘arî"
+    ],
+    "answer": 4
+  },
+  {
+    "question": "102. Gazzâlî’nin tasavvuf yolunu tercih edip Bağdat’ı terk ettikten sonra kaleme aldıg1ı dinî ilimleri  canlandırma amacını taşıyan eser aşağıdakilerden hangisidir?",
+    "options": [
+      "a) Miʻyâru’l-ilm",
+      "b) el-İktisâd fi’l-iʻtikâd",
+      "c) Tehâfütü’l-felâsife",
+      "d) Mîzânu’l-amel",
+      "e) İhyâu ulûmi’d-dîn"
+    ],
+    "answer": 4
+  },
+  {
+    "question": "103. Gazzâlî’nin filozofları eleştirmek için kaleme aldıg1ı meşhur eser aşağıdakilerden hangisidir?",
+    "options": [
+      "a) Tehâfütü’l-felâsife",
+      "b) Makâsıdu’l-felâsife",
+      "c) Miʻyâru’l-ilm",
+      "d) el-İktisâd fi’l-iʻtikâd",
+      "e) Mihakkü’n-nazar"
+    ],
+    "answer": 0
+  },
+  {
+    "question": "104. Gazzâlî’ye göre İslam filozoflarının “Mutlak Filozof” olarak gördüğü filozof aşağıdakilerden  hangisidir?",
+    "options": [
+      "a) Eflatun",
+      "b) Heraklitos",
+      "c) Parmenides",
+      "d) Aristoteles",
+      "e) Epikür"
+    ],
+    "answer": 3
+  },
+  {
+    "question": "105. İbn Sînâ’ya göre kaç tür nefsten söz edilebilir?",
+    "options": [
+      "a) 4",
+      "b) 2",
+      "c) 5",
+      "d) 3",
+      "e) 1"
+    ],
+    "answer": 3
+  },
+  {
+    "question": "106. Aşağıdakilerden hangisi Tehâfütü’l-felâsife adlı eserin yazarıdır?",
+    "options": [
+      "a) İbn Rüşd",
+      "b) Gazzâlî",
+      "c) Sühreverdî",
+      "d) İbn Sînâ",
+      "e) Şehristânî"
+    ],
+    "answer": 1
+  },
+  {
+    "question": "107. Gazzâlî aşağıdaki devlet adamlarından hangisinin himayesinde ilmî faaliyetini sürdürmüştür?",
+    "options": [
+      "a) Tuğrul Bey",
+      "b) Nizâmülmülk",
+      "c) Selahaddin-i Eyyûbî",
+      "d) Berkyaruk",
+      "e) Alparslan"
+    ],
+    "answer": 1
+  },
+  {
+    "question": "108. “Bu durum mantıkî deliller getirmek ve söz düzenlemekle değil, yüce Allah’ın kalbe bıraktıg1ı bir  …… oldu.”",
+    "options": [
+      "a) Yukarıdaki boşluğu doğru bir şekilde tamamlayan seçeneği bulunuz.",
+      "b) Huzurla",
+      "c) Mesajla",
+      "d) Nurla",
+      "e) İlhamla"
+    ],
+    "answer": 2
+  },
+  {
+    "question": "109. Gazzâlî’ye göre aşağıdakilerden hangisi İslam filozoflarının sıklıkla bahsettikleri bir filozof  değildir?",
+    "options": [
+      "a) Sokrates",
+      "b) Hipokrat",
+      "c) Eflatun",
+      "d) Empedokles",
+      "e) Aristoteles"
+    ],
+    "answer": 3
+  },
+  {
+    "question": "110. Aşağıdakilerden hangisi İbn Teymiyye’nin felsefe eleştirilerini de içeren eseridir?",
+    "options": [
+      "a) Musâra‘atü’l-felâsife",
+      "b) Der’u te‘âruzi’l-akl ve’n-nakl",
+      "c) Şerhu’l-İşârât",
+      "d) el-Muhâkemât",
+      "e) Tehâfütü’l-felâsife"
+    ],
+    "answer": 1
+  },
+  {
+    "question": "111. Sühreverdî tarafından İbn Sînâ’nın felsefî sistemini Eflâtuncu bir gözle yeniden yorumlamayı amaçlayan  felsefe ekolünün adı aşağıdakilerden hangisidir?",
+    "options": [
+      "a) İşrâkîlik",
+      "b) Meşşâîlik",
+      "c) Dehrîlik",
+      "d) Tasavvuf",
+      "e) Revâkiyyûn"
+    ],
+    "answer": 0
+  },
+  {
+    "question": "112. Aşağıdakilerden hangisi Sühreverdî’nin kaynaklık ettiği ekolün adıdır?",
+    "options": [
+      "a) İşrâkîlik",
+      "b) Meşşâîlik",
+      "c) Dehrîlik",
+      "d) Tabîiyyûn",
+      "e) Revâkiyyûn"
+    ],
+    "answer": 0
+  },
+  {
+    "question": "113. Gazzâlî’nin yaşadıg1ı dönemde Abbâsî hilafetinin karşısındaki en önemli rakip güç  aşağıdakilerden hangisidir?",
+    "options": [
+      "a) Selçuklular",
+      "b) Büveyhîler",
+      "c) Fâtımîler",
+      "d) Sâmânîler",
+      "e) Karmatîler"
+    ],
+    "answer": 2
+  },
+  {
+    "question": "114. Gazzâlî aşağıdaki kelam ekollerinden hangisine mensuptur?",
+    "options": [
+      "a) Eşʻarî",
+      "b) Mâturîdî",
+      "c) Bâtınî",
+      "d) Şîî",
+      "e) Selefî"
+    ],
+    "answer": 0
+  },
+  {
+    "question": "115. Aşağıdakilerden hangisi insan bedenindeki sıvıların karı ımıyla olu ş şan yapının adıdır?",
+    "options": [
+      "a) Nefs",
+      "b) Mizaç",
+      "c) Kalp",
+      "d) Terkip",
+      "e) Arzu"
+    ],
+    "answer": 1
+  },
+  {
+    "question": "116. Aşağıdakilerden hangisi Sühreverdî’nin kaynaklık ettiği ekolün adıdır?",
+    "options": [
+      "a) İşrâkîlik",
+      "b) Meşşâîlik",
+      "c) Dehrîlik",
+      "d) Tabîiyyûn",
+      "e) Revâkiyyûn"
+    ],
+    "answer": 0
+  },
+  {
+    "question": "117. Aşağıdakilerden hangisi Gazzâlî’nin hakkında eser yazmadıg1ı bir alandır?",
+    "options": [
+      "a) Fıkıh",
+      "b) Felsefe",
+      "c) Kelam",
+      "d) Hadis",
+      "e) Tasavvuf"
+    ],
+    "answer": 3
+  },
+  {
+    "question": "118. Gazzâlî’nin Bilgi İçin Ölçüt adlı kitabı hangi konuya odaklanmaktadır?",
+    "options": [
+      "a) Fizik",
+      "b) Ahlak",
+      "c) Siyaset",
+      "d) Matematik",
+      "e) Mantık"
+    ],
+    "answer": 4
+  },
+  {
+    "question": "119. Gazzâlî, bir yaratıcı fikrine sahip olan ancak âhiret fikrini reddeden filozofları aşağıdakilerden  hangisiyle adlandırmaktadır?",
+    "options": [
+      "a) Materyalistler",
+      "b) Metafizikçiler",
+      "c) Mantıkçılar",
+      "d) Geometriciler",
+      "e) Naturalistler"
+    ],
+    "answer": 4
+  },
+  {
+    "question": "120. Gazzâlî, aklın zorunlu bilgilerine olan güveninin hangi yolla geri geldiğini söylemektedir?",
+    "options": [
+      "a) Allah’ın vahyiyle",
+      "b) Allah’ın kalbine bıraktıg1ı bir nurla",
+      "c) Meleğin getirdiği ilhamla",
+      "d) Allah’ın gönderdiği elçiyle",
+      "e) Kur’an’ın mesajıyla"
+    ],
+    "answer": 1
+  },
+  {
+    "question": "121. Gazzâlî filozofları kaç öğretisinden dolayı tekfir etmiştir?",
+    "options": [
+      "a) 2",
+      "b) 1",
+      "c) 17",
+      "d) 20",
+      "e) 3"
+    ],
+    "answer": 4
+  },
+  {
+    "question": "122. Aşağıdakilerden hangisi İbn Sînâcılıg1ın Irak coğrafyasında yayılmasında etkili bir isimdir?",
+    "options": [
+      "a) Kemaleddin b. Yûnus",
+      "b) Râzî",
+      "c) Âmidî",
+      "d) Tûsî",
+      "e) Antaklayı Theodore"
+    ],
+    "answer": 0
+  },
+  {
+    "question": "123. Gazzâlî’nin bilgi arayı ında a ş şağıdaki bilgi kaynaklarından hangisi hakkında bir şüphe  duymamıştır?",
+    "options": [
+      "a) Akıl",
+      "b) Geleneksel inançlar",
+      "c) Vahiy",
+      "d) Duyular",
+      "e) Otoriteden gelen bilgiler"
+    ],
+    "answer": 2
+  }
+];
+
+let aktifSoru = 0;
+let puan = 0;
+let kullaniciCevaplar = new Array(sorular.length).fill(null);
+
+function gosterSoru() {
+  const s = sorular[aktifSoru];
+  document.getElementById("soru-metin").innerText = `Soru ${aktifSoru + 1}: ${s.question}`;
+
+  const seceneklerDiv = document.getElementById("secenekler");
+  seceneklerDiv.innerHTML = "";
+
+  s.options.forEach((secenek, i) => {
+    const btn = document.createElement("button");
+    btn.innerText = secenek;
+    btn.onclick = () => cevapSec(i);
+    seceneklerDiv.appendChild(btn);
+  });
+
+  document.getElementById("soru-sec").value = aktifSoru;
+  document.getElementById("geri-bildirim").innerText = "";
+}
+
+function cevapSec(index) {
+  if (kullaniciCevaplar[aktifSoru] !== null) return;
+
+  kullaniciCevaplar[aktifSoru] = index;
+  const dogruMu = index === sorular[aktifSoru].answer;
+  const geri = document.getElementById("geri-bildirim");
+  geri.innerText = dogruMu ? "✅ Doğru!" : `❌ Yanlış! Doğru Cevap: ${sorular[aktifSoru].options[sorular[aktifSoru].answer]}`;
+  if (dogruMu) puan++;
+}
+
+function cevapla() {
+  if (kullaniciCevaplar[aktifSoru] === null) {
+    alert("Lütfen bir cevap seçin.");
+    return;
+  }
+}
+
+function sonrakiSoru() {
+  if (kullaniciCevaplar[aktifSoru] === null) {
+    alert("Lütfen cevabınızı girin.");
+    return;
+  }
+  if (aktifSoru < sorular.length - 1) {
+    aktifSoru++;
+    gosterSoru();
+  } else {
+    sonucuGoster();
+  }
+}
+
+function soruListesiniDoldur() {
+  const sec = document.getElementById("soru-sec");
+  sec.innerHTML = "";
+  for (let i = 0; i < sorular.length; i++) {
+    const opt = document.createElement("option");
+    opt.value = i;
+    opt.text = `Soru ${i + 1}`;
+    sec.appendChild(opt);
+  }
+  sec.addEventListener("change", (e) => {
+    aktifSoru = parseInt(e.target.value);
+    gosterSoru();
+  });
+}
+
+function testiBitir() {
+  sonucuGoster();
+}
+
+function sonucuGoster() {
+  document.getElementById("test").style.display = "none";
+  document.getElementById("navigasyon").style.display = "none";
+  document.getElementById("sonuc").innerText = `Toplam ${sorular.length} sorudan ${puan} doğru cevap verdiniz.`;
+  document.getElementById("bastan").style.display = "block";
+}
+
+function bastanBasla() {
+  aktifSoru = 0;
+  puan = 0;
+  kullaniciCevaplar = new Array(sorular.length).fill(null);
+  document.getElementById("test").style.display = "block";
+  document.getElementById("navigasyon").style.display = "block";
+  document.getElementById("sonuc").innerText = "";
+  document.getElementById("bastan").style.display = "none";
+  gosterSoru();
+}
+
+soruListesiniDoldur();
+gosterSoru();
+</script>
+
+</body>
+</html>
